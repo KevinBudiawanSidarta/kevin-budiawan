@@ -1,6 +1,3 @@
-/* ==========================================================================
-   Kevin Budiawan Sidarta — Portfolio scripts
-   ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
 
   /* Lucide icons */
@@ -35,23 +32,40 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ---- Navbar scroll state + lap-trace progress ---- */
+  /* ---- Navbar scroll state + lap-trace progress ---- */
   const navbar = document.querySelector('.navbar');
   const lapFill = document.querySelector('.lap-trace__fill');
   const backToTop = document.querySelector('.back-to-top');
 
-  function onScroll() {
+  let docH = 0;
+  function measure() {
+    docH = document.documentElement.scrollHeight - window.innerHeight;
+  }
+  measure();
+  window.addEventListener('resize', measure, { passive: true });
+
+  let ticking = false;
+  function updateOnScroll() {
     const y = window.scrollY || document.documentElement.scrollTop;
+
     if (navbar) navbar.classList.toggle('is-scrolled', y > 8);
     if (backToTop) backToTop.classList.toggle('is-visible', y > 500);
 
     if (lapFill) {
-      const docH = document.documentElement.scrollHeight - window.innerHeight;
-      const pct = docH > 0 ? (y / docH) * 100 : 0;
-      lapFill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+      const pct = docH > 0 ? Math.min(1, Math.max(0, y / docH)) : 0;
+      lapFill.style.transform = `scaleX(${pct})`;
+    }
+    ticking = false;
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(updateOnScroll);
+      ticking = true;
     }
   }
   document.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  updateOnScroll();
 
   if (backToTop) {
     backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
